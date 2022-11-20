@@ -1,6 +1,5 @@
 package org.example;
 
-
 import org.webtech.Student;
 import org.webtech.jaxb.StudentJAXB;
 
@@ -11,15 +10,18 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class ClientReader {
+public class ServerReader {
     private InputStreamReader in;
-    private Scanner inScanner;
     private StudentJAXB studentJAXB;
-    public ClientReader(InputStream in, StudentJAXB studentJAXB) {
+
+    private Scanner inScanner;
+
+    public ServerReader(InputStream in, StudentJAXB studentJAXB) {
         this.in = new InputStreamReader(in);
         this.studentJAXB = studentJAXB;
         this.inScanner = new Scanner(in);
     }
+
     String waitForInput() {
         char[] buffer = new char[255];
         StringBuilder answer = new StringBuilder();
@@ -32,11 +34,9 @@ public class ClientReader {
                 }
                 else answer.append(readResult);
             }
-            while(buffer[buffer.length-1]!='\u0000' && in.read(buffer)!=-1);
+            while(buffer[254]!='\u0000' && in.read(buffer)!=-1);
         }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        catch (IOException ex) {}
         return answer.toString();
     }
 
@@ -45,5 +45,4 @@ public class ClientReader {
         StringReader stringReader = new StringReader(studentString);
         return studentJAXB.unmarshallStudent(stringReader);
     }
-
 }

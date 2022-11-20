@@ -18,11 +18,13 @@ public class ClientsConnection {
                 try {
                     clientSocket = serverSocket.accept(); // wait for clients to connect
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    clientSocket = null;
+                    continue;
                 }
 
                 if(clientSocket!=null) { //danger
                     clients.add(new Client(clientSocket));
+                    System.out.println("Клиент подключен!");
                 }
             }
         }
@@ -37,13 +39,14 @@ public class ClientsConnection {
         this.clients = new LinkedList<>();
         try {
             this.serverSocket = new ServerSocket(port);
+            System.out.println("Сервер запущен. Порт для подключения - "+port);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        WaitForClients();
+        waitForClients();
     }
 
-    private void WaitForClients() {
+    private void waitForClients() {
         Thread thread = new Thread(new ClientsConnectionAwaiting());
         thread.start();
     }

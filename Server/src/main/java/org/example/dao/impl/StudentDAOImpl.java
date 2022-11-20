@@ -1,57 +1,64 @@
 package org.example.dao.impl;
 
-import org.example.POJO.Student;
 import org.example.dao.StudentDAO;
+import org.webtech.Student;
+import org.webtech.jaxb.StudentJAXB;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 public class StudentDAOImpl implements StudentDAO {
-    private static JAXBContext jaxbContext;
-    private static Marshaller marshaller;
-    private static Unmarshaller unmarshaller;
-
     private static long currentId;
-
-    public StudentDAOImpl() {
-        try {
-            jaxbContext = JAXBContext.newInstance(Student.class);
-            marshaller = jaxbContext.createMarshaller();
-            unmarshaller = jaxbContext.createUnmarshaller();
-            try(Scanner scanner = new Scanner("src/main/resources/sequence_id.txt")){
-                currentId = Long.parseLong(scanner.next());
-            }
+    private static StudentJAXB studentJAXB;
+    public StudentDAOImpl(StudentJAXB studentJAXB) {
+        this.studentJAXB = studentJAXB;
+        try(Scanner scanner = new Scanner(new File("src/main/resources/sequence_id.txt"))){
+            currentId = Long.parseLong(scanner.next());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        catch (JAXBException e) {
-            e.printStackTrace();
+    }
+
+    private void incrementCurrentId() {
+        currentId++;
+        try(FileWriter fileWriter = new FileWriter("src/main/resources/sequence_id.txt")) {
+            fileWriter.write(String.valueOf(currentId));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Student findStudentById(long id) {
-        try {
-            return (Student) unmarshaller.unmarshal(new File("src/main/resources/Student"+id+".xml"));
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
+        try(FileReader fileReader = new FileReader("src/main/resources/Student"+id+".xml")) {
+            return studentJAXB.unmarshallStudent(fileReader);
+        } catch (IOException e) {
+            return new Student(-1);
         }
     }
 
     @Override
     public void writeStudent(Student student) {
-        try {
-            marshaller.marshal(student,new File("src/main/resources/Student"+currentId+".xml"));
-            currentId++;
-            try(FileWriter fileWriter = new FileWriter("src/main/resources/sequence_id.txt")) {
-                fileWriter.write(String.valueOf(currentId));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (JAXBException e) {
+        try(FileWriter fileWriter = new FileWriter("src/main/resources/Student"+student.getId()+".xml")) {
+            studentJAXB.marshallStudent(student,fileWriter);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void deleteStudentById(long id) {
+        try {
+            Files.deleteIfExists(new File("src/main/resources/Student"+id+".xml").toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public long requestAvailableId() {
+        incrementCurrentId();
+        return currentId-1;
     }
 }
