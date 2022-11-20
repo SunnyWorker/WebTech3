@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<student>
+    <age>19</age>
+    <averageMark>8.9</averageMark>
+    <course>3</course>
+    <faculty>FCSAN</faculty>
+    <id>0</id>
+    <name>Artyom</name>
+    <surname>Khotsin</surname>
+</student>
