@@ -1,7 +1,6 @@
-package org.webtech;
+package org.webtech.pojo;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 @XmlRootElement
 public class Student implements Cloneable {
@@ -90,7 +89,6 @@ public class Student implements Cloneable {
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-
     @Override
     public String toString() {
         return "Студент "+ id +

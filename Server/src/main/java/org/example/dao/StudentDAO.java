@@ -1,7 +1,7 @@
 package org.example.dao;
 
 
-import org.webtech.Student;
+import org.webtech.pojo.Student;
 
 public interface StudentDAO {
     Student findStudentById(long id);

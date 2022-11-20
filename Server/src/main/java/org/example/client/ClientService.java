@@ -1,25 +1,27 @@
-package org.example;
+package org.example.client;
 
+import org.example.client.io.ClientWriter;
 import org.example.dao.DAOFactory;
 import org.example.dao.StudentDAO;
-import org.webtech.Student;
+import org.webtech.io.SocketReader;
+import org.webtech.pojo.Student;
 
 import java.io.IOException;
 import java.net.Socket;
 
-public class Client {
+public class ClientService {
     private Socket socket;
-    private ClientReader clientReader;
+    private SocketReader clientReader;
     private ClientWriter clientWriter;
     private Student student;
     private StudentDAO studentDAO;
     int role; // 0 - no rights, 1 - read only, 2 - full control
 
-    public Client(Socket socket) {
+    public ClientService(Socket socket) {
         this.socket = socket;
         try {
             DAOFactory daoFactory = DAOFactory.getInstance();
-            clientReader = new ClientReader(socket.getInputStream(),daoFactory.getStudentJAXB());
+            clientReader = new SocketReader(socket.getInputStream(),daoFactory.getStudentJAXB());
             clientWriter = new ClientWriter(socket.getOutputStream(),daoFactory.getStudentJAXB());
             studentDAO = DAOFactory.getInstance().getStudentDAO();
             waitForCommand();
@@ -33,11 +35,12 @@ public class Client {
         public void run() {
             role = Integer.parseInt(clientReader.waitForInput());
             clientWriter.sayHello(role);
-            int command = 0;
+            int command = 0, permission = 0;
             while(command!=5) {
                 command = Integer.parseInt(clientReader.waitForInput());
-                if(checkCommandForAvailability(command)) {
-                    clientWriter.sendMessage("1");
+                permission = checkCommandForAvailability(command);
+                clientWriter.sendMessage(String.valueOf(permission));
+                if(permission==1) {
                     switch (command) {
                         case 1:
                             requestReport();
@@ -52,27 +55,28 @@ public class Client {
                             deleteReport();
                             break;
                         case 5:
-                            ClientsConnection.closeClient(Client.this);
+                            ClientsConnection.closeConnection(ClientService.this);
                             break;
                     }
                 }
-                else clientWriter.sendMessage("0");
             }
         }
     }
 
-    private boolean checkCommandForAvailability(int command) {
-        if(command==5) return true;
-        else if(role>0 && command==1) return true;
-        else if(role>1 && command==2) return true;
-        else if(role>1 && student!=null) return true;
-        return false;
+    private int checkCommandForAvailability(int command) {
+        if(command==5) return 1;
+        else if(role>0 && command==1) return 1;
+        else if(role>1 && command==2) return 1;
+        else if(role>1 && student!=null) return 1;
+        else if(command>2 && student==null) return 2;
+        return 0;
     }
 
     private void requestReport() {
         long id = Long.parseLong(clientReader.waitForInput());
         student = studentDAO.findStudentById(id);
         clientWriter.sendStudentInfo(student);
+        if(student.getId()==-1) student = null;
     }
 
     private void changeReport() {

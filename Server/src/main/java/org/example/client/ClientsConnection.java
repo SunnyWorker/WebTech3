@@ -1,4 +1,4 @@
-package org.example;
+package org.example.client;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ClientsConnection {
-    private static List<Client> clients;
+    private static List<ClientService> clientServices;
     private static ServerSocket serverSocket;
 
     private class ClientsConnectionAwaiting implements Runnable {
@@ -22,21 +22,25 @@ public class ClientsConnection {
                     continue;
                 }
 
-                if(clientSocket!=null) { //danger
-                    clients.add(new Client(clientSocket));
+                if(clientSocket!=null) {
+                    synchronized (clientServices) {
+                        clientServices.add(new ClientService(clientSocket)); //danger
+                    }
                     System.out.println("Клиент подключен!");
                 }
             }
         }
     }
 
-    static void closeClient(Client client) {
-        client.closeSocket();
-        clients.remove(client); //danger
+    public static void closeConnection(ClientService clientService) {
+        clientService.closeSocket();
+        synchronized (clientServices) {
+            clientServices.remove(clientService); //danger
+        }
     }
 
     public ClientsConnection(int port) {
-        this.clients = new LinkedList<>();
+        this.clientServices = new LinkedList<>();
         try {
             this.serverSocket = new ServerSocket(port);
             System.out.println("Сервер запущен. Порт для подключения - "+port);

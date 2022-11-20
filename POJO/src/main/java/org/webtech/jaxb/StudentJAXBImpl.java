@@ -1,6 +1,6 @@
 package org.webtech.jaxb;
 
-import org.webtech.Student;
+import org.webtech.pojo.Student;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;

@@ -1,6 +1,6 @@
 package org.webtech.jaxb;
 
-import org.webtech.Student;
+import org.webtech.pojo.Student;
 
 import java.io.Reader;
 import java.io.Writer;

@@ -1,28 +1,23 @@
-package org.example;
+package org.webtech.io;
 
-import org.webtech.Student;
+import org.webtech.pojo.Student;
 import org.webtech.jaxb.StudentJAXB;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Scanner;
 
-public class ServerReader {
+public class SocketReader {
     private InputStreamReader in;
     private StudentJAXB studentJAXB;
 
-    private Scanner inScanner;
-
-    public ServerReader(InputStream in, StudentJAXB studentJAXB) {
+    public SocketReader(InputStream in, StudentJAXB studentJAXB) {
         this.in = new InputStreamReader(in);
         this.studentJAXB = studentJAXB;
-        this.inScanner = new Scanner(in);
     }
 
-    String waitForInput() {
+    public String waitForInput() {
         char[] buffer = new char[255];
         StringBuilder answer = new StringBuilder();
         try {
@@ -40,7 +35,7 @@ public class ServerReader {
         return answer.toString();
     }
 
-    Student receiveStudentInfo() {
+    public Student receiveStudentInfo() {
         String studentString = waitForInput();
         StringReader stringReader = new StringReader(studentString);
         return studentJAXB.unmarshallStudent(stringReader);

@@ -1,26 +1,29 @@
-package org.example;
+package org.example.server;
 
-import org.webtech.Faculty;
-import org.webtech.Student;
+import org.example.Account;
+import org.webtech.io.SocketReader;
+import org.webtech.io.SocketWriter;
 import org.webtech.jaxb.StudentJAXB;
 import org.webtech.jaxb.StudentJAXBImpl;
+import org.webtech.pojo.Faculty;
+import org.webtech.pojo.Student;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class Server {
-    private ServerReader serverReader;
-    private ServerWriter serverWriter;
+public class ServerService {
+    private SocketReader serverReader;
+    private SocketWriter serverWriter;
     private Student student;
     private Scanner userConsole;
 
-    public Server(Socket socket, Account account) {
+    public ServerService(Socket socket, Account account) {
         try {
             StudentJAXB studentJAXB = new StudentJAXBImpl();
-            this.serverReader = new ServerReader(socket.getInputStream(), studentJAXB);
-            this.serverWriter = new ServerWriter(socket.getOutputStream(), studentJAXB);
+            this.serverReader = new SocketReader(socket.getInputStream(), studentJAXB);
+            this.serverWriter = new SocketWriter(socket.getOutputStream(), studentJAXB);
             this.student = null;
             this.userConsole = new Scanner(System.in);
         } catch (IOException e) {
@@ -38,7 +41,6 @@ public class Server {
             printMenu();
             try {
                 command = Integer.parseInt(userConsole.nextLine());
-
                 if(command!=0) {
                     serverWriter.sendMessage(String.valueOf(command));
                     permission = Byte.parseByte(serverReader.waitForInput());
@@ -50,8 +52,6 @@ public class Server {
                         case 0:
                             if(student!=null) System.out.println(student);
                             else System.err.println("Ни одно дело не открыто!");
-                            System.out.println("Введите ENTER для продолжения...");
-                            userConsole.nextLine();
                             break;
                         case 1:
                             requestReport();
@@ -61,7 +61,7 @@ public class Server {
                             break;
                         case 3:
                             if (student != null) changeReport();
-                            else System.out.println("Команда не найдена! Выберите другую!");
+                            else System.err.println("Команда не найдена! Выберите другую!");
                             break;
                         case 4:
                             if (student != null) {
@@ -69,17 +69,22 @@ public class Server {
                                 student = null;
                             }
                             else {
-                                System.out.println("Команда не найдена! Выберите другую!");
+                                System.err.println("Команда не найдена! Выберите другую!");
                             }
                             break;
                         case 5:
+                            System.out.println("Меню закрыто!");
                             ServerConnection.closeConnection();
-                            break;
+                            return;
                         default:
-                            System.out.println("Команда не найдена! Выберите другую!");
+                            System.err.println("Команда не найдена! Выберите другую!");
                             break;
                     }
-                } else System.out.println("Ваши текущие права не позволяют использовать данные команды!\n");
+                }
+                else if(permission==0) System.err.println("Ваши текущие права не позволяют использовать данные команды!\n");
+                else System.err.println("Ни одно дело не открыто!");
+                System.err.println("Нажмите ENTER для продолжения...");
+                userConsole.nextLine();
             }
             catch (InputMismatchException | NumberFormatException ex) {
                 System.err.println("Введённые данные не являются числом! Повторите ввод!");
@@ -87,7 +92,6 @@ public class Server {
                 userConsole.nextLine();
             }
         }
-        System.out.println("Меню закрыто!");
     }
 
     private void changeReport() {
@@ -159,10 +163,11 @@ public class Server {
         System.out.println("Введите ID студента для поиска...");
         long id = Long.parseLong(userConsole.nextLine());
         serverWriter.sendMessage(String.valueOf(id));
-        student = serverReader.receiveStudentInfo();
+        Student student = serverReader.receiveStudentInfo();
         if(student.getId()==-1) {
             System.err.println("Студент с данным ID не найден...");
         }
+        else this.student = student;
     }
 
     private void printMenu() {

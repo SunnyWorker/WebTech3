@@ -1,6 +1,6 @@
-package org.example;
+package org.webtech.io;
 
-import org.webtech.Student;
+import org.webtech.pojo.Student;
 import org.webtech.jaxb.StudentJAXB;
 
 import java.io.IOException;
@@ -8,31 +8,16 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 
-public class ClientWriter {
+public class SocketWriter {
     private OutputStreamWriter out;
     private StudentJAXB studentJAXB;
-    public ClientWriter(OutputStream out, StudentJAXB studentJAXB) {
+
+    public SocketWriter(OutputStream out, StudentJAXB studentJAXB) {
         this.studentJAXB = studentJAXB;
         this.out = new OutputStreamWriter(out);
     }
 
-    void sayHello(int role) {
-        String hello = "";
-        switch (role) {
-            case 0:
-                hello = "Добро пожаловать, гость!";
-                break;
-            case 1:
-                hello = "Добрый день, пользователь.";
-                break;
-            case 2:
-                hello = "Glad to see you, administrator...";
-                break;
-        }
-        sendMessage(hello);
-    }
-
-    void sendMessage(String message) {
+    public void sendMessage(String message) {
         try {
             out.write(message);
             out.flush();
@@ -41,7 +26,7 @@ public class ClientWriter {
         }
     }
 
-    void sendStudentInfo(Student student) {
+    public void sendStudentInfo(Student student) {
         StringWriter stringWriter = new StringWriter();
         studentJAXB.marshallStudent(student,stringWriter);
         stringWriter.flush();

@@ -1,9 +1,6 @@
 package org.example;
 
-import org.example.dao.DAOFactory;
-import org.example.dao.StudentDAO;
-import org.webtech.Faculty;
-import org.webtech.Student;
+import org.example.client.ClientsConnection;
 
 public class Main {
     public static void main(String[] args) {

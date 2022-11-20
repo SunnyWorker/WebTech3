@@ -1,8 +1,8 @@
 package org.example.dao.impl;
 
 import org.example.dao.StudentDAO;
-import org.webtech.Student;
 import org.webtech.jaxb.StudentJAXB;
+import org.webtech.pojo.Student;
 
 import java.io.*;
 import java.nio.file.Files;

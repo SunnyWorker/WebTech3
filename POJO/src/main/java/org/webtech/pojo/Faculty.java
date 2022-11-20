@@ -1,4 +1,4 @@
-package org.webtech;
+package org.webtech.pojo;
 
 public enum Faculty {
     FCSAN, //Фксис
